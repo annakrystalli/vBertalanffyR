@@ -13,5 +13,9 @@
 #' @examples
 catch_dat_expand <- function(x, quarter, age, length_class, CANoAtLngt) {
     x <- as.data.frame(x)
-    x[rep(seq(nrow(x)), x[,CANoAtLngt]), c(quarter, age, length_class)]
+    x <- x[rep(seq(nrow(x)), x[,CANoAtLngt]), c(quarter, age, length_class)]
+    names(x) <- c("quarter", "age", "length_class")
+    x$qs <- (x$quarter==4)*0.75
+
+    return(x)
 }

@@ -8,15 +8,25 @@ output: html_notebook
 library(rstan)
 library(tidyverse)
 library(purrr)
+library(testthat)
+set.seed(1)
 ## Load data
 load("../inst/extdata/Spence_turtle_data.Rdata")
+stan_dir <- "../from Mike/"
+```
+
+
+```{r}
+list.files("../R", full.names = T) %>% map(source)
 ```
 
 ## Herring
 
 ### Assign species data to `df`
 ```{r}
-df <- her_on
+nrow(her_on)
+sub_rows <- 1:500
+df <- her_on[sub_rows,]
 ```
 
 
@@ -27,18 +37,50 @@ tibble(var_names = names(df), description = "", units = "", var_type = "") %>% w
 
 
 ```{r}
-df <- df %>% as_tibble()
 df
 ```
 
 
+
 ```{r}
-list.files("../R", full.names = T) %>% map(source)
+exp_df <- catch_dat_expand(df, quarter = "Quarter", age = "Age", length_class =  "LngtClass",
+                 CANoAtLngt = "CANoAtLngt")
+
+
+```
+
+```{r}
+h_complete_dat<-list(t = exp_df$age, l = exp_df$length_class, N = length(exp_df$age), q = exp_df$qs,mu_a=0.8576*2*pi-pi,sigma_a=0.40493)
+
+fit_c <- stan(file = paste0(stan_dir, "vb.stan"), data = h_complete_dat, iter = 2000, chains = 1,control=list(adapt_delta=0.85,max_treedepth=10))
+
+fit_c2 <- stan(file = paste0(stan_dir, "vb.stan"), data = h_complete_dat, iter = 2000, chains = 1,control=list(adapt_delta=0.85,max_treedepth=10))
+
+compare(fit_c, fit_c2)
+
+```
+```{r}
+summary(fit_c)
+```
+
+
+```{r}
+plot(fit_c)
+```
+
+```{r}
+traceplot(fit_c, pars = c("l_inf", "k"))
 ```
 
 ```{r}
 
-
-
+h_comp_out<-extract(fit_c)
 ```
 
+
+
+### Inputing data
+
+The factor type in R is not supported as a data element for `RStan` and **must be converted to integer codes via `as.integer`**. The `Stan` modeling language distinguishes between integers and doubles (type `int` and `real` in `Stan` modeling language, respectively). The `stan` function will convert some R data (which is double-precision usually) to integers if possible.
+
+Stan cannot handle missing values in data automatically, so no element of the data can contain NA values.
