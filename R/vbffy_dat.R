@@ -11,7 +11,7 @@
 #' @export
 #'
 #' @examples
-vbffy_dat <- function(x, quarter, age, length_class, CANoAtLngt) {
+vbffy_dat <- function(x, quarter, age, length_class, CANoAtLngt, spawn_loc = NULL, spawn_spread = NULL) {
     x <- as.data.frame(x)
     x <- x[rep(seq(nrow(x)), x[,CANoAtLngt]), c(quarter, age, length_class)]
     names(x) <- c("quarter", "age", "length_class")
@@ -26,8 +26,8 @@ vbffy_dat <- function(x, quarter, age, length_class, CANoAtLngt) {
                    N1 = sum(x$temp == FALSE),
                    N4 = sum(x$temp == TRUE),
                    q = x$quarter,
-                   mu_a = 0.8576 * 2 * pi - pi,
-                   sigma_a = 0.40493)
+                   mu_a = spawn_loc * 2 * pi - pi,
+                   sigma_a = spawn_spread)
 
 
     return(vb_dat)
