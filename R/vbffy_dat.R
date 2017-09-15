@@ -11,11 +11,24 @@
 #' @export
 #'
 #' @examples
-catch_dat_expand <- function(x, quarter, age, length_class, CANoAtLngt) {
+vbffy_dat <- function(x, quarter, age, length_class, CANoAtLngt) {
     x <- as.data.frame(x)
     x <- x[rep(seq(nrow(x)), x[,CANoAtLngt]), c(quarter, age, length_class)]
     names(x) <- c("quarter", "age", "length_class")
     x$qs <- (x$quarter==4)*0.75
+    x$temp <- x$age == 0
+    x <- x[order(x$temp),]
 
-    return(x)
+
+    vb_dat <- list(t = x$age,
+                   l = x$length_class,
+                   N = nrow(x),
+                   N1 = sum(x$temp == FALSE),
+                   N4 = sum(x$temp == TRUE),
+                   q = x$quarter,
+                   mu_a = 0.8576 * 2 * pi - pi,
+                   sigma_a = 0.40493)
+
+
+    return(vb_dat)
 }
