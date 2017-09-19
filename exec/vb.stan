@@ -4,37 +4,37 @@
 data {
   int <lower=0> N;
   //length
-  real<lower=0> l[N];
+  real<lower=0> length[N];
   //age
-  int<lower=0> t[N];
+  int<lower=0> age[N];
 }
 
 transformed data{
   //expected length at time/age t
-  real l_tt[N];
+  real log_length[N];
   for (i in 1:N){
-    l_tt[i] = log(l[i]);
+    log_length[i] = log(length[i]);
   }
 }
 
 parameters {
-  real<lower=0> l_inf;
-  real <lower=0,upper=3> k;
+  real<lower=0> asym_length;
+  real <lower=0,upper=3> growth_coef;
   real<lower=0> sigmasq;
-  real <upper=0>t0;
+  real <upper=0>theor_age_length0;
 }
 
 
 transformed parameters {
   real<lower=0> sigma;
-  real E_ll[N];
+  real exp_log_length[N];
   sigma = sqrt(sigmasq);
   for (i in 1:N){
-    E_ll[i] = log(l_inf)+log(1-exp(-k*(t[i]-t0)));
+    exp_log_length[i] = log(asym_length)+log(1-exp(-growth_coef*(age[i]-theor_age_length0)));
   }
 }
 
 model {
   //sigmasq~inv_gamma(0.001,0.001);
-  l_tt ~ normal(E_ll,sigma);
+  log_length ~ normal(exp_log_length,sigma);
 }
